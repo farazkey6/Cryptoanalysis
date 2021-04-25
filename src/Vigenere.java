@@ -13,13 +13,16 @@ public class Vigenere{
         String cipher = "UYWOVTRBANTPIJQFIGPNOUOXYFVLWZQCSPBJCZQFUIOPRWZUAAFISWAEKCOUPNVKJUFGQPDVGOSVCZUPSPDPNORZUFFKVAPJGVAE";
         System.out.println("Possible key sizes along with their frequency: ");
         System.out.println(Kasiski(cipher, 2, 6));
-        //System.out.print(Kasiski(cipher, 2, 6));
+        int[] keysizes = {2, 5, 4};
+        System.out.println("The Possible decrypted ciphers are as followed: ");
+        //System.out.println(Friedman(cipher, keysizes)); in progress
+        System.out.println(Caeser("abc"));
     }
 
-    public static int Friedman(String cipher, int keysize){
+    public static int Friedman(String cipher, int[] keysizes){
 
         String[] container = new String[cipher.length()];
-        for (int i = 2; i < cipher.length(); i++){ //length of key
+        for (int i = 0; i < keysizes.length; i++){ //different key sizes
 
             for (int j = 0; j < container.length; j++){ //empty the string array for a new key size
 
@@ -27,15 +30,15 @@ public class Vigenere{
             }
             for (int k = 0; k < cipher.length(); k++){
 
-                container[k%i] += cipher.charAt(k);
+                container[k%keysizes[i]] += cipher.charAt(k);
             }
 
-            //System.out.println(container[0]);
+            System.out.println(container[0]);
         }
         return 0;
     }
     
-    public static HashMap Kasiski(String cipher, int minKeyLength, int maxKeyLength) {
+    public static HashMap<Integer, Integer> Kasiski(String cipher, int minKeyLength, int maxKeyLength) {
     	
     	List<Integer> occurances = new ArrayList<Integer>();
     	List<Integer> divisors = new ArrayList<Integer>();
@@ -109,5 +112,28 @@ public class Vigenere{
 		
 		//mapSortedBasedOnValues.forEach((k,v)->System.out.println(k+"\t"+v));
     	return mapSortedBasedOnValues;
+    }
+    
+    public static String[] Caeser (String cipher){
+        
+    	String uppercaseCipher = cipher.toUpperCase();
+		String[] rotation = new String[26];
+    	for (int shift = 0; shift < 26; shift++) {
+    		for (int i = 0; i < uppercaseCipher.length(); i++) {
+                int ca = (int) uppercaseCipher.charAt(i);
+                if (ca >= 65 && ca <= 90) {
+                	
+                	if (ca + shift <= 90) {
+                		ca += shift;
+                	}else {
+                		
+                		ca+= shift - 26;
+                	}
+                }
+                rotation[shift] += (char) ca;
+            }
+    	}
+    	
+    	return rotation;
     }
 }
