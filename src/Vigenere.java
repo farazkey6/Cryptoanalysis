@@ -19,62 +19,129 @@ public class Vigenere{
     	Collectors.counting())
     	); */
         
-    	final char english_letters[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-    	final double english_freqs[] = {0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061, 0.070, 0.002, 0.008, 0.040, 0.024, 0.067, 0.075, 0.019, 0.001, 0.060, 0.063, 0.091, 0.028, 0.010, 0.023, 0.001, 0.020, 0.001};
+    	//final char english_letters[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+    	//final double english_freqs[] = {0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061, 0.070, 0.002, 0.008, 0.040, 0.024, 0.067, 0.075, 0.019, 0.001, 0.060, 0.063, 0.091, 0.028, 0.010, 0.023, 0.001, 0.020, 0.001};
     	String cipher = "PATGSJKGSPFPCTSSKHOIGSDHNBCUHVIHKSHVBKPBQLEGVFSHPLTQFLYRWSRLYBSSRPPPPGIUOTUSHVPTZSVLNBCHCIWMIZSZKPWWZLZKXJWUCMWFCBCAACBKKGDBHOAPPMHVBKPBQLDXKWGPPXSZCUZHCNCVWGSOGRAWIVSTPHROFLBHGHVLYNQIBAEEWWGYAMJFBDDBRVVLKIIWAPOMXQOSHRPBHPYBEOHLZPDIZKXXCCZVJZTFHOWGIKCDAXZGCMYHJFGLPATKOYSTHBCAPHTBRZKJJWQRHR";
+        String decipher = "THESECONDBRIGADEWASPREPARINGTOMOVETOFRANCEINGREATSECRECYHEDECIDEDITWASUNSAFETOTAKEHERINTOBATTLESOWHILEDRIVINGTHROUGHLONDONONTHEWAYTOFRANCEHEVISITEDLONDONZOOANDASKEDTHEMTOCAREFORTHECUBUNTILHISRETURNWHICHHEOPTIMISTICALLYANTICIPATEDWOULDBENOLONGERTHANTWOWEEKSOFCOURSETHEWARWASNOTTOENDSOQUICKLY";
+    	String caesar = "YMJXJHTSIGWNLFIJBFXUWJUFWNSLYTRTAJYTKWFSHJNSLWJFYXJHWJHDMJIJHNIJINYBFXZSXFKJYTYFPJMJWNSYTGFYYQJXTBMNQJIWNANSLYMWTZLMQTSITSTSYMJBFDYTKWFSHJMJANXNYJIQTSITSETTFSIFXPJIYMJRYTHFWJKTWYMJHZGZSYNQMNXWJYZWSBMNHMMJTUYNRNXYNHFQQDFSYNHNUFYJIBTZQIGJSTQTSLJWYMFSYBTBJJPXTKHTZWXJYMJBFWBFXSTYYTJSIXTVZNHPQD";
         System.out.println("Possible key sizes along with their frequency: ");
         System.out.println("Kasiski says these are the possible keys" +Kasiski(cipher, 5, 10));
-        int[] keys = EstimateKeySize(cipher, 16, 22);
+        int[] keys = EstimateKeySize(cipher, 1, 22);
+        //System.out.println("Answer is: " + calcIC(decipher) + " with " + calcIC(cipher));
         for(int x : keys) {
         	System.out.println("Candidate key length: " + x);
         }
-        int[] keysizes = {16, 32, 48};
-        System.out.println("The Possible decrypted ciphers are as followed: ");
-        //System.out.println(Friedman(cipher, keysizes)); //in progress
-        //System.out.println(Caeser("abc")[0]);
+        int[] keysizes = {6};
+        System.out.println("The Possible decrypted cipher is as followed: ");
+        System.out.println(Friedman(cipher, keysizes)); //in progress
+        
+        //System.out.println(Caeser(caesar));
+        //System.out.println(Crack("ahovbipwcjqxdkryelszfmtgnu", 7));
+        //System.out.println(Crack("aiqybjrzcksdltemufnvgowhpx", 8));
     }
 
-	public static void Friedman(String cipher, int[] keysizes){
+	public static String Friedman(String cipher, int[] keysizes){
 
-    	//double smol_key = smol(keysizes);
+		String cracked = "";
+		String[] deciphers = {"", "", ""};
+    	double[] highScores = {1, 1, 1, 0};
     	
         for (int i = 0; i < keysizes.length; i++){ //for each key size
         	
+        	int key = keysizes[i];
         	int cont_size = (int) Math.ceil(cipher.length()/keysizes[i]);
-            String[] container = new String[keysizes[i]];
-            String[][] stabbed = new String[keysizes[i]][26]; //result of a row in container getting caesered
-  //          for (int j = 0; j < container.length; j++){ //empty the string array for a new key size
-//
- //               container[j] = "";
-//            }
+            String[] container = new String[key];
+            String[] stabbed = new String[key]; //result of a row in container getting caesered
+            for (int j = 0; j < container.length; j++){ //empty the string array for a new key size
+
+                container[j] = "";
+            }
             for (int j = 0; j < cipher.length(); j++){
 
-                container[j%keysizes[i]] += cipher.charAt(j);
+                container[Math.floorMod(j, key)] += cipher.charAt(j);
             }
         		
             for (int row = 0; row < container.length ; row++) {
             	
             	stabbed[row] = Caeser(container[row]);
+            	System.out.println(container[row] + " --> " + stabbed[row]);
             }
-            System.out.println(container[0]);
+            //System.out.println(container[0]);
+            
+            String decrypto = "";
+            for ( String X : stabbed) {
+            	
+            	decrypto += X;
+            }
+            
+            cracked = Crack(decrypto, key);
+             
         }
+        return cracked;
     }
     
     
-    public static int IndexOfCoincidence(String cipher) {
+    private static String Crack(String cipher, int key) { //fixed: there's a bug cause the holes don't exist. Possible solution: counting the holes, adding a $ from the end by multiple of index and ignoring those letters in the loop
+
+    	cipher = cipher.toUpperCase();
+    	String unscrambled = "";
+    	int N = cipher.length();
+    	double ix = Math.ceil((double) N/ (double) key);
+    	int index = (int) ix;
     	
-    	double ioc = calcIC(cipher);
-    	int[] frequencies = new int[26];
+    	int holes = (index * key) - N;
+    	
+    	for (int i = (holes - 1); i >= 0; i--) {
+    		
+    		cipher = new StringBuilder(cipher).insert((key * index - 1) - (i * index), "$").toString();
+    	}
+    	
+    	for (int i = 0; i < index; i++) {
+    		for (int j = 0; j < key; j++) {
+    			int x = (j * index) + i;
+    			int y = index * key;
+    			int z = Math.floorMod(x, y);
+        		char c = cipher.charAt(z);
+        		if (c != '$') {
+        			unscrambled += c;
+        		}
+    		}
+    	}
+		return unscrambled;
+	}
+
+	public static char matchLetterIC(String cipher, char c, char[] letter, double[] coincidence) {
+    	
+    	char key = 'A';
+    	double frequency = 0;
+    	double N = cipher.length();
+    	double highScore = 1;
 
 		for (int i = 0; i < cipher.length(); i++) {
-			frequencies[cipher.charAt(i) - 'A']++;
+			if (cipher.charAt(i) == c) {
+				frequency-=-1;
+			}
 		}
 		
-		double max = 0.027 * cipher.length();
-		double min = (cipher.length() - 1) * ioc - 0.038 * cipher.length() + 0.065;
+		double ioc = (frequency * (frequency - 1) / N * (N - 1));
 		
-		int keysize = (int) (max/min);
-    	return keysize;
+		if (ioc == 0) {
+			
+			return '?';
+		}
+		
+		for (int i = 0; i < letter.length; i++) {
+			
+			double score = Math.pow(ioc - coincidence[i], 2);
+			if(score < highScore) {
+				
+				highScore = score;
+				key = (char) letter[i];
+			}
+			
+		}
+		
+    	return key;
     }
     
     private static double calcIC(String cipher) {
@@ -84,7 +151,6 @@ public class Vigenere{
     		for (int i = 0; i < cipher.length(); i++) {
     			
     			frequencies[cipher.charAt(i) - 'A'] -=-1;
-    			//System.out.print(cipher.charAt(i) + " ");
     		}
     		
     		
@@ -103,10 +169,9 @@ public class Vigenere{
     	System.out.println("Looking for best keys between lengths of " + minKeySize  + "-" + MaxKeySize);
     	int[] keySizes = {0, 0, 0};
     	double[] highScores = {1, 1, 1, 0};
-    	for (int i = minKeySize; i <= MaxKeySize; i++){ //for each key size
+    	for (int key = minKeySize; key <= MaxKeySize; key++){ //for each key size
         	
-        	//int cont_size = (int) Math.ceil(cipher.length()/i); //number of columns for some reason
-            String[] container = new String[i];
+            String[] container = new String[key];
             double score = 0;
             
             for (int j = 0; j < container.length; j++) {
@@ -114,22 +179,21 @@ public class Vigenere{
             }
             for (int j = 0; j < cipher.length(); j++){
 
-                container[j%i] += cipher.charAt(j);
+                container[Math.floorMod(j, key)] += cipher.charAt(j);
             }
             
             for (int j = 0; j < container.length; j++) {
             	
-            	System.out.print("Key size of: " + i + " The " + j + " sequence is: " + container[j]);
-            	System.out.println(" Partial cipher size is: " + container[j].length() + " IOC = " + calcIC(container[j]));
+            	//System.out.print("Key size of: " + key + " The " + j + " sequence is: " + container[j]);
+            	//System.out.println(" Partial cipher size is: " + container[j].length() + " IOC = " + calcIC(container[j]));
             	score += Math.pow(calcIC(container[j]) - 0.065, 2);
-            	//score += calcIC(container[j]) - 0.065;
             }
             
-            score /= i;
+            score /= key;
             if (score < highScores[2]) {
             	
-            	System.out.println(i + " has the score of: " +score);
-            	highScores = Sorted_Insert(score, i, highScores, keySizes);
+            	//System.out.println(key + " has the score of: " +score);
+            	highScores = Sorted_Insert(score, key, highScores, keySizes);
             }
             
     	}
@@ -137,7 +201,36 @@ public class Vigenere{
 		return keySizes;
 	}
     
-	private static double[] Sorted_Insert(double score, int candidKey, double[] highScores, int[] keys) {
+    private static double[] Sorted_Insert(double score, int candidKey, double[] highScores, int[] keys) {
+		boolean done = false;
+		int index = 0;
+		while (!done && index < highScores.length - 1) { //last cell is reserved for the index return
+			if (score < highScores[index]) {
+				
+				done = true;
+			}else {
+				
+				index-=-1;
+			}
+		}
+		if (done) {
+			
+			if (index + 1 != highScores.length-1) {
+				for ( int i = highScores.length-2; i > index; i--) {
+				
+					highScores[i] = highScores[i-1];
+					keys[i] = keys[i-1];
+				}
+			}
+			highScores[index] = score;
+			keys[index] = candidKey;
+			highScores[highScores.length-1] = index;
+		}
+		
+		return highScores;
+	}
+    
+    private static double[] Sorted_Insert(double score, String candidKey, double[] highScores, String[] keys) {
 		boolean done = false;
 		int index = 0;
 		while (!done && index < highScores.length - 1) { //last cell is reserved for the index return
@@ -184,21 +277,19 @@ public class Vigenere{
     				}
     			}
     		}
-    		if (occurances.isEmpty() == false) { //found a pattern -> stop searching
+    		if (occurances.isEmpty() == false) { //found a pattern -> stop searching : only added for testing, remove later 
     			break;
     		}
     	}
-		//System.out.print(occurances);
 
     	for (Integer number : occurances) {
     		
     		for (int i = 2; i < number; i++) {
     			
-    			if(number%i == 0) {
+    			if(Math.floorMod(number, i) == 0) {
     				divisors.add(i);
     			}
     		}
-    		//System.out.print(number + "-> " +divisors);
     	}
     	
     	for (Integer number : divisors) {
@@ -210,49 +301,35 @@ public class Vigenere{
         	}
 		}
     	
-    	//System.out.print(Collections.max(frequency.entrySet(), HashMap.Entry.comparingByValue()).getKey()); //highest frequency
-    	
     	return sortByValue(frequency);
     }
     
     public static LinkedHashMap<Integer, Integer> sortByValue(HashMap<Integer, Integer> hm)
     {
-        /*
-    	int[] keys = new int[hm.size()];
-    	int[] values = new int[hm.size()];
-
-    	for (HashMap.Entry<Integer, Integer> entry : hm.entrySet()) {
-    		
-    		for(int i = 0; i < hm.size(); i++) {
-    			
-    			if (values[i] > entry.getValue())
-    				continue;
-    			for (int j = hm.size() - 1; j > i; j--) {
-    				values[j] = values [j-1];
-    				keys[j] = keys[j-1];
-    			}
-    			
-    			values[i] = entry.getValue();
-    			keys[i] = entry.getKey();
-    	        break;
-    		}
-    	}
-    	*/
     	LinkedHashMap<Integer, Integer> mapSortedBasedOnValues = hm.entrySet().stream().sorted((e1,e2)->
 		e2.getValue().compareTo(e1.getValue())).
 		collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1,e2)->e1, LinkedHashMap::new));
 		
-		//mapSortedBasedOnValues.forEach((k,v)->System.out.println(k+"\t"+v));
     	return mapSortedBasedOnValues;
     }
     
-    public static String[] Caeser (String cipher){ //create string array with 26 different shifts (including the original shift = 0)  on the input cipher
+    public static String Caeser (String cipher){ //create string array with 26 different shifts (including the original shift = 0)  on the input cipher
         
-    	String uppercaseCipher = cipher.toUpperCase();
-		String[] rotation = new String[26];
+    	final char english_letters[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+    	final double english_freqs[] = {0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061, 0.070, 0.002, 0.008, 0.040, 0.024, 0.067, 0.075, 0.019, 0.001, 0.060, 0.063, 0.091, 0.028, 0.010, 0.023, 0.001, 0.020, 0.001};
+    	
+    	cipher = cipher.toUpperCase();
+		String stabbed = "";
+		double highScore = Double.MAX_VALUE;
+		char ord = 'A';
+		
     	for (int shift = 0; shift < 26; shift++) {
-    		for (int i = 0; i < uppercaseCipher.length(); i++) {
-                int ca = (int) uppercaseCipher.charAt(i);
+    		String rotation = "";
+    		double score = 0.0;
+    		ArrayList<Integer> vars = new ArrayList<>();
+    		
+    		for (int i = 0; i < cipher.length(); i++) {
+                int ca = (int) cipher.charAt(i);
                 if (ca >= 65 && ca <= 90) {
                 	
                 	if (ca + shift <= 90) {
@@ -262,28 +339,69 @@ public class Vigenere{
                 		ca+= shift - 26;
                 	}
                 }
-                rotation[shift] += (char) ca;
+                vars.add((Math.floorMod(ca - matchLetterIC(cipher, (char) ca, english_letters, english_freqs), english_letters.length)));
+                rotation += (char) ca;
             }
+    		
+    		
+    		
+    		score = calcVariance(vars);
+    		//System.out.println(score);
+    		if (score < highScore) {
+    			
+    			highScore = score;
+    			ord = (char) (shift + 65);
+    			stabbed = rotation;
+    		}
     	}
     	
-    	return rotation;
+    	return stabbed;
     }
     
-    public static int smol(int[] arr) {
+    public static double calcVariance(ArrayList<Integer> arr) {
     	
-    	int smallest = Integer.MAX_VALUE;
-        int index=0;
-        while(index<arr.length) {
-            if(smallest>arr[index]) {
-                smallest=arr[index];
-            }
-            index++; 
-        }
-        return smallest;
+    	double mean = 0.0;
+    	for (int X : arr) {
+    		
+    		mean+= X;
+    	}
+    	mean /= arr.size();
+
+    	// The variance
+    	double variance = 0;
+    	for (int X : arr) {
+    	    variance += Math.pow(X - mean, 2);
+    	}
+    	variance /= arr.size();
+    	
+    	return variance;
     }
     
-    public static char FrequencyAnalysis(String[] rotations) { //analyze and return the best key
-    	int shift = 0;
-    	return (char) (shift + 65);
+    public static int findIndex(char arr[], char t){
+    	
+        ArrayList<Character> clist = new ArrayList<>();
+ 
+        for (char c : arr)
+            clist.add(c);
+ 
+        return clist.indexOf(t);
+    }
+    
+    public static String Stitch(String[][] stabbed, String stitched, int index, int bidex) { //scrapped: too much resource intensive
+    	
+    	if (index < 26) {
+    		stitched += stabbed[bidex][index];
+    		index-=-1;
+    		for (int i = 0; i < stabbed.length; i++) {
+    			
+    			Stitch(stabbed, stitched, index, i);
+    		}
+    		
+    	}else {
+    		
+    		return stabbed[index][stabbed.length];
+    	}
+    	
+    	return null;
     }
 }
