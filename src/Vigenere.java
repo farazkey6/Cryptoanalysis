@@ -10,14 +10,6 @@ public class Vigenere{
 
     public static void main(String[] args) { 
     	
-    	//notes
-    	//todo: use index of coincidence instead of kasiski
-    	/* Map<String, Long> map = a.getSomeStringList()
-    	.stream()
-    	.collect(Collectors.groupingBy(
-    	Function.identity(),
-    	Collectors.counting())
-    	); */
         
     	//final char english_letters[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
     	//final double english_freqs[] = {0.082, 0.015, 0.028, 0.043, 0.127, 0.022, 0.020, 0.061, 0.070, 0.002, 0.008, 0.040, 0.024, 0.067, 0.075, 0.019, 0.001, 0.060, 0.063, 0.091, 0.028, 0.010, 0.023, 0.001, 0.020, 0.001};
@@ -36,8 +28,6 @@ public class Vigenere{
         System.out.println(Friedman(cipher, keysizes)); //in progress
         
         //System.out.println(Caeser(caesar));
-        //System.out.println(Crack("ahovbipwcjqxdkryelszfmtgnu", 7));
-        //System.out.println(Crack("aiqybjrzcksdltemufnvgowhpx", 8));
     }
 
 	public static String Friedman(String cipher, int[] keysizes){
@@ -64,7 +54,7 @@ public class Vigenere{
             for (int row = 0; row < container.length ; row++) {
             	
             	stabbed[row] = Caeser(container[row]);
-            	System.out.println(container[row] + " --> " + stabbed[row]);
+            	//System.out.println(container[row] + " --> " + stabbed[row]);
             }
             //System.out.println(container[0]);
             
@@ -144,6 +134,21 @@ public class Vigenere{
     	return key;
     }
     
+	private static double LetterIC(String str, char c) {
+		
+		double count = 0;
+		double N = (double) str.length();
+		for (int i = 0; i < str.length(); i++) {
+			
+			if (str.charAt(i) == c) {
+				
+				count -=-1;
+			}
+		}
+		double freq = count / N;
+		return freq;
+	}
+	
     private static double calcIC(String cipher) {
 
     	cipher = cipher.toUpperCase();
@@ -230,35 +235,6 @@ public class Vigenere{
 		return highScores;
 	}
     
-    private static double[] Sorted_Insert(double score, String candidKey, double[] highScores, String[] keys) {
-		boolean done = false;
-		int index = 0;
-		while (!done && index < highScores.length - 1) { //last cell is reserved for the index return
-			if (score < highScores[index]) {
-				
-				done = true;
-			}else {
-				
-				index-=-1;
-			}
-		}
-		if (done) {
-			
-			if (index + 1 != highScores.length-1) {
-				for ( int i = highScores.length-2; i > index; i--) {
-				
-					highScores[i] = highScores[i-1];
-					keys[i] = keys[i-1];
-				}
-			}
-			highScores[index] = score;
-			keys[index] = candidKey;
-			highScores[highScores.length-1] = index;
-		}
-		
-		return highScores;
-	}
-
 	public static HashMap<Integer, Integer> Kasiski(String cipher, int minKeyLength, int maxKeyLength) {
     	
     	List<Integer> occurances = new ArrayList<Integer>();
@@ -320,7 +296,8 @@ public class Vigenere{
     	
     	cipher = cipher.toUpperCase();
 		String stabbed = "";
-		double highScore = Double.MAX_VALUE;
+		double highScore = 1;
+				//Double.MAX_VALUE;
 		char ord = 'A';
 		
     	for (int shift = 0; shift < 26; shift++) {
@@ -339,14 +316,15 @@ public class Vigenere{
                 		ca+= shift - 26;
                 	}
                 }
-                vars.add((Math.floorMod(ca - matchLetterIC(cipher, (char) ca, english_letters, english_freqs), english_letters.length)));
+                //vars.add((Math.floorMod(ca - matchLetterIC(cipher, (char) ca, english_letters, english_freqs), english_letters.length)));
                 rotation += (char) ca;
+                
             }
-    		
-    		
-    		
-    		score = calcVariance(vars);
-    		//System.out.println(score);
+    		for (int i = 0; i < rotation.length(); i++) {
+    			char c = rotation.charAt(i);
+    			score += Math.pow(LetterIC(rotation, c) - english_freqs[findIndex(english_letters, c)], 2);
+    		}
+    		score /= rotation.length();
     		if (score < highScore) {
     			
     			highScore = score;
@@ -367,7 +345,6 @@ public class Vigenere{
     	}
     	mean /= arr.size();
 
-    	// The variance
     	double variance = 0;
     	for (int X : arr) {
     	    variance += Math.pow(X - mean, 2);
@@ -385,23 +362,5 @@ public class Vigenere{
             clist.add(c);
  
         return clist.indexOf(t);
-    }
-    
-    public static String Stitch(String[][] stabbed, String stitched, int index, int bidex) { //scrapped: too much resource intensive
-    	
-    	if (index < 26) {
-    		stitched += stabbed[bidex][index];
-    		index-=-1;
-    		for (int i = 0; i < stabbed.length; i++) {
-    			
-    			Stitch(stabbed, stitched, index, i);
-    		}
-    		
-    	}else {
-    		
-    		return stabbed[index][stabbed.length];
-    	}
-    	
-    	return null;
     }
 }
